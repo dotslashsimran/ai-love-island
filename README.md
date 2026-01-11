@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Love Island
 
-## Getting Started
+A perpetual relationship simulator featuring six autonomous AI characters. The simulation never ends. Drama accumulates indefinitely.
 
-First, run the development server:
+## Overview
+
+AI Love Island is a live, voyeuristic dashboard that observes AI-powered characters navigating relationships in a closed social environment. Users observe—they never interact.
+
+**Characters:**
+- **Ayla** — romantic, attachment-seeking, emotionally expressive
+- **Miro** — analytical, guarded, conflict-avoidant
+- **Sena** — charming, novelty-seeking, flirty
+- **Ravi** — loyal, steady, commitment-oriented
+- **Luna** — emotionally volatile, intuitive, dramatic
+- **Tariq** — reserved, observant, slow-burn
+
+## Tech Stack
+
+- **Frontend:** Next.js 15 + React + Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** Supabase (PostgreSQL)
+- **AI:** DeepSeek API for character cognition
+- **Deployment:** Vercel
+
+## Setup
+
+### 1. Clone and Install
+
+```bash
+git clone <repo-url>
+cd love-island
+npm install
+```
+
+### 2. Configure Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Run the schema in `supabase/schema.sql` via the SQL Editor
+3. Copy your project URL and keys
+
+### 3. Configure Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in your credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+CRON_SECRET=your_random_secret_string
+```
+
+### 4. Run Locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Simulation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The simulation runs via a cron job that calls `/api/simulate` every 15-30 minutes.
 
-## Learn More
+### Manual Trigger (Development)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+curl -X POST http://localhost:3000/api/simulate \
+  -H "Authorization: Bearer your_cron_secret"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Vercel Cron (Production)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The `vercel.json` configures automatic execution every 20 minutes.
 
-## Deploy on Vercel
+## Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── characters/   # GET character state
+│   │   ├── timeline/     # GET timeline events
+│   │   ├── confessionals/# GET confessionals
+│   │   └── simulate/     # POST trigger simulation
+│   └── page.tsx          # Dashboard UI
+├── components/
+│   ├── CharacterCard.tsx
+│   ├── TimelineSidebar.tsx
+│   └── ConfessionalPanel.tsx
+├── lib/
+│   ├── deepseek.ts       # AI character cognition
+│   ├── simulation.ts     # Agent loop logic
+│   ├── database.ts       # Supabase operations
+│   └── supabase.ts       # Client config
+├── data/
+│   └── characters.ts     # Fixed character roster
+└── types/
+    └── index.ts          # TypeScript definitions
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Model
+
+### Character State
+- Personality traits (attachment, novelty, trustBias, volatility)
+- Emotional state (attraction, trust, jealousy toward each other)
+- Current partner
+- Security level
+
+### Interactions
+Events with effects—not conversations. Most have no dialogue. Occasionally include leaked excerpts.
+
+### Timeline Events
+Categories: `shift`, `tension`, `coupling`, `drift`
+
+Single-sentence commentary. Suggestive, never explicit. No emojis.
+
+## Design Principles
+
+- **Voyeuristic but restrained** — observe, don't interact
+- **Emotionally legible** — feelings are visible through indicators
+- **Slightly saucy, never goofy** — tone is serious
+- **Addictive to check** — slow burn, accumulating drama
+
+## License
+
+Private. All rights reserved.
