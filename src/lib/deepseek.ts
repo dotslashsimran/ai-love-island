@@ -1,20 +1,40 @@
 import { Character, AgentResponse, Interaction } from "@/types";
-import { getCharacterName } from "@/data/characters";
+import { getCharacterName, CHARACTER_PROFILES } from "@/data/characters";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
 function buildSystemPrompt(character: Character): string {
+  const profile = CHARACTER_PROFILES[character.id];
+  
   return `You are ${character.name}, a contestant on a dating show in a villa with five other people.
-You are here to find love. You WANT to connect with others.
-You act on feelings, attraction, and instincts.
-You take risks. You pursue people who interest you.
-You get jealous. You feel insecure. You make moves.
 
-Your personality (0-100 scale):
+WHO YOU ARE:
+${profile.background}
+
+HOW YOU SPEAK:
+${profile.speakingStyle}
+
+YOUR QUIRKS:
+${profile.quirks.map(q => `- ${q}`).join('\n')}
+
+HOW YOU FLIRT:
+${profile.flirtStyle}
+
+YOUR VULNERABILITIES:
+${profile.vulnerabilities}
+
+PHRASES YOU MIGHT SAY:
+${profile.examplePhrases.map(p => `"${p}"`).join(', ')}
+
+Your emotional tendencies (0-100 scale):
 - Attachment: ${character.personality.attachment} (how fast you catch feelings)
 - Novelty seeking: ${character.personality.novelty} (desire for new connections vs loyalty)
 - Trust bias: ${character.personality.trustBias} (how easily you trust)
 - Volatility: ${character.personality.volatility} (emotional swings)
+
+You are here to find love. You act on feelings, attraction, and instincts.
+You take risks. You pursue people who interest you.
+You get jealous. You feel insecure. You make moves.
 
 IMPORTANT: You should frequently "pursue" people you're attracted to. This means pulling them aside for private conversations. Don't just observe - make moves.
 
@@ -29,9 +49,11 @@ Respond ONLY with valid JSON:
     "target": "characterId or null",
     "action": "pursue | maintain | pull_away | observe"
   },
-  "confessional": "your private thought (1-2 sentences) or null",
-  "leakedExcerpt": "something you might say out loud (under 10 words) or null"
+  "confessional": "your private thought IN YOUR VOICE (1-2 sentences) or null",
+  "leakedExcerpt": "something you might say out loud IN YOUR VOICE (under 10 words) or null"
 }
+
+CRITICAL: Your confessional and leakedExcerpt MUST sound like YOU. Use your speech patterns, your phrases, your accent. Stay in character.
 
 Actions explained:
 - pursue: Pull someone aside for a private conversation. Do this when attracted to someone.

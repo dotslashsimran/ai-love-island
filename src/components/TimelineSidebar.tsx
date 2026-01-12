@@ -9,6 +9,7 @@ interface TimelineSidebarProps {
   interactions?: Interaction[];
   conversations?: Conversation[];
   onConversationClick?: (conversation: Conversation) => void;
+  hideHeader?: boolean;
 }
 
 export function TimelineSidebar({ 
@@ -16,6 +17,7 @@ export function TimelineSidebar({
   interactions = [],
   conversations = [],
   onConversationClick,
+  hideHeader = false,
 }: TimelineSidebarProps) {
   // Create conversation events from conversations
   const conversationEvents: (TimelineEvent & { conversation?: Conversation })[] = conversations.map(convo => {
@@ -57,31 +59,33 @@ export function TimelineSidebar({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-800">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-          </span>
-          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Live Observation
-          </h2>
-          <span className="text-[10px] text-zinc-600 ml-auto">
-            {allEvents.length} events
-          </span>
+      {/* Header - can be hidden when parent provides its own */}
+      {!hideHeader && (
+        <div className="px-4 py-3 border-b border-[#4B5358]/30">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#AF929D] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#AF929D]"></span>
+            </span>
+            <h2 className="text-xs font-medium uppercase tracking-wider text-[#727072]">
+              Live Observation
+            </h2>
+            <span className="text-[10px] text-[#4B5358] ml-auto">
+              {allEvents.length} events
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Scrollable timeline */}
       <div className="flex-1 overflow-y-auto">
         {allEvents.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <p className="text-zinc-600 text-sm">Observing...</p>
-            <p className="text-zinc-700 text-xs mt-2">The villa is quiet. Something will happen soon.</p>
+            <p className="text-[#727072] text-sm">Observing...</p>
+            <p className="text-[#4B5358] text-xs mt-2">The villa is quiet. Something will happen soon.</p>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-800/50">
+          <div className="divide-y divide-[#4B5358]/20">
             {allEvents.map((event) => (
               <TimelineItem 
                 key={event.id} 
@@ -110,11 +114,11 @@ function TimelineItem({
   onConversationClick?: (conversation: Conversation) => void;
 }) {
   const categoryStyles: Record<string, { border: string; dot: string }> = {
-    shift: { border: "border-l-rose-500/50", dot: "bg-rose-500" },
-    tension: { border: "border-l-amber-500/50", dot: "bg-amber-500" },
-    coupling: { border: "border-l-emerald-500/50", dot: "bg-emerald-500" },
-    drift: { border: "border-l-zinc-500/50", dot: "bg-zinc-500" },
-    conversation: { border: "border-l-violet-500/50", dot: "bg-violet-500" },
+    shift: { border: "border-l-[#AF929D]/50", dot: "bg-[#AF929D]" },
+    tension: { border: "border-l-[#727072]/50", dot: "bg-[#727072]" },
+    coupling: { border: "border-l-[#104547]", dot: "bg-[#104547]" },
+    drift: { border: "border-l-[#4B5358]/50", dot: "bg-[#4B5358]" },
+    conversation: { border: "border-l-[#D2D6EF]/50", dot: "bg-[#D2D6EF]" },
   };
 
   const style = categoryStyles[event.category] || categoryStyles.drift;
@@ -127,17 +131,17 @@ function TimelineItem({
 
   return (
     <div 
-      className={`px-4 py-3 border-l-2 ${style.border} hover:bg-zinc-900/30 transition-colors ${isClickable ? 'cursor-pointer' : ''}`}
+      className={`px-4 py-3 border-l-2 ${style.border} hover:bg-[#104547]/10 transition-colors ${isClickable ? 'cursor-pointer' : ''}`}
       onClick={() => isClickable && onConversationClick(conversation)}
     >
       <div className="flex items-start gap-2">
         <div className={`w-1.5 h-1.5 rounded-full ${style.dot} mt-1.5 shrink-0`} />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-zinc-300 leading-relaxed">
+          <p className="text-sm text-[#D2D6EF] leading-relaxed">
             {event.description}
           </p>
           {isClickable && (
-            <p className="text-[10px] text-violet-400 mt-1 flex items-center gap-1">
+            <p className="text-[10px] text-[#AF929D] mt-1 flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
@@ -145,11 +149,11 @@ function TimelineItem({
             </p>
           )}
           {leakedExcerpt && !conversation && (
-            <p className="text-xs text-zinc-500 mt-1.5 italic border-l border-zinc-700 pl-2">
+            <p className="text-xs text-[#727072] mt-1.5 italic border-l border-[#4B5358] pl-2">
               {leakedExcerpt}
             </p>
           )}
-          <p className="text-[10px] text-zinc-600 mt-1.5 uppercase tracking-wider">
+          <p className="text-[10px] text-[#4B5358] mt-1.5 uppercase tracking-wider">
             {timeAgo}
           </p>
         </div>

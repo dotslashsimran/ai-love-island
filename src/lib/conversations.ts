@@ -1,5 +1,5 @@
 import { Character, ConversationMessage, CharacterMemory } from "@/types";
-import { getCharacterName } from "@/data/characters";
+import { getCharacterName, CHARACTER_PROFILES } from "@/data/characters";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
@@ -13,6 +13,9 @@ interface ConversationContext {
 
 function buildConversationPrompt(ctx: ConversationContext): string {
   const { initiator, recipient, initiatorMemories, recipientMemories, reason } = ctx;
+
+  const initiatorProfile = CHARACTER_PROFILES[initiator.id];
+  const recipientProfile = CHARACTER_PROFILES[recipient.id];
 
   const initiatorFeelings = `attraction: ${initiator.emotionalState.attraction[recipient.id] ?? 50}, trust: ${initiator.emotionalState.trust[recipient.id] ?? 50}, jealousy: ${initiator.emotionalState.jealousy[recipient.id] ?? 0}`;
   const recipientFeelings = `attraction: ${recipient.emotionalState.attraction[initiator.id] ?? 50}, trust: ${recipient.emotionalState.trust[initiator.id] ?? 50}, jealousy: ${recipient.emotionalState.jealousy[initiator.id] ?? 0}`;
@@ -33,27 +36,43 @@ function buildConversationPrompt(ctx: ConversationContext): string {
 
   return `You are simulating a private conversation between two people in a romantic social environment (like a dating show villa).
 
-CHARACTERS:
-${initiator.name} (initiating):
-- Personality: attachment=${initiator.personality.attachment}, novelty=${initiator.personality.novelty}, volatility=${initiator.personality.volatility}
-- Feelings toward ${recipient.name}: ${initiatorFeelings}
-- Partner: ${initiator.currentPartner ? getCharacterName(initiator.currentPartner) : "None"}
+CHARACTER 1 - ${initiator.name} (initiating the conversation):
+Background: ${initiatorProfile.background}
+Speaking style: ${initiatorProfile.speakingStyle}
+Quirks: ${initiatorProfile.quirks.join(". ")}
+How they flirt: ${initiatorProfile.flirtStyle}
+Vulnerabilities: ${initiatorProfile.vulnerabilities}
+Example phrases: ${initiatorProfile.examplePhrases.map(p => `"${p}"`).join(", ")}
+Current feelings toward ${recipient.name}: ${initiatorFeelings}
+Partner status: ${initiator.currentPartner ? getCharacterName(initiator.currentPartner) : "Single"}
 ${initiatorMemStr}
 
-${recipient.name} (responding):
-- Personality: attachment=${recipient.personality.attachment}, novelty=${recipient.personality.novelty}, volatility=${recipient.personality.volatility}
-- Feelings toward ${initiator.name}: ${recipientFeelings}
-- Partner: ${recipient.currentPartner ? getCharacterName(recipient.currentPartner) : "None"}
+CHARACTER 2 - ${recipient.name} (responding):
+Background: ${recipientProfile.background}
+Speaking style: ${recipientProfile.speakingStyle}
+Quirks: ${recipientProfile.quirks.join(". ")}
+How they flirt: ${recipientProfile.flirtStyle}
+Vulnerabilities: ${recipientProfile.vulnerabilities}
+Example phrases: ${recipientProfile.examplePhrases.map(p => `"${p}"`).join(", ")}
+Current feelings toward ${initiator.name}: ${recipientFeelings}
+Partner status: ${recipient.currentPartner ? getCharacterName(recipient.currentPartner) : "Single"}
 ${recipientMemStr}
 
 CONTEXT: ${reasonContext[reason]}
 
-Generate a realistic, emotionally authentic conversation of 4-8 exchanges. The dialogue should:
+Generate a realistic, emotionally authentic conversation of 4-8 exchanges. 
+
+CRITICAL VOICE REQUIREMENTS:
+- ${initiator.name} MUST sound like ${initiator.name}. Use their speech patterns, their phrases, their accent.
+- ${recipient.name} MUST sound like ${recipient.name}. Completely different voice from ${initiator.name}.
+- Each character's lines should be instantly recognizable as THEM.
+- Include their verbal quirks naturally (but don't overdo it).
+
+The dialogue should:
 - Feel natural and human, not scripted
 - Show subtext and emotional undercurrents
 - Include flirtation, vulnerability, or tension as appropriate
 - Never be explicit, but can be suggestive and intimate
-- Reflect each character's personality and current feelings
 - Reference memories if relevant
 
 Respond with JSON only:

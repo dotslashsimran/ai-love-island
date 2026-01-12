@@ -1,7 +1,7 @@
 "use client";
 
 import { Character, Conversation } from "@/types";
-import { INITIAL_CHARACTERS } from "@/data/characters";
+import { INITIAL_CHARACTERS, CHARACTER_PROFILES } from "@/data/characters";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 
@@ -18,6 +18,8 @@ export function CharacterModal({ character, allCharacters, onClose }: CharacterM
   const partner = character.currentPartner
     ? allCharacters.find((c) => c.id === character.currentPartner)
     : null;
+
+  const profile = CHARACTER_PROFILES[character.id];
 
   useEffect(() => {
     async function fetchConversations() {
@@ -47,14 +49,11 @@ export function CharacterModal({ character, allCharacters, onClose }: CharacterM
     }))
     .sort((a, b) => b.attraction - a.attraction);
 
-  const personalityDescriptions: Record<string, string> = {
-    ayla: "Romantic and attachment-seeking. She falls fast and feels deeply.",
-    miro: "Analytical and guarded. He processes before he acts.",
-    sena: "Charming and novelty-seeking. Attention is her currency.",
-    ravi: "Loyal and steady. Once committed, he doesn't waver easily.",
-    luna: "Volatile and intuitive. Her moods shift like weather.",
-    tariq: "Reserved and observant. He watches before he moves.",
-  };
+  // Extract age and occupation from profile
+  const backgroundMatch = profile?.background.match(/A (\d+)-year-old ([^.]+)/);
+  const age = backgroundMatch?.[1] || "26";
+  const occupation = backgroundMatch?.[2]?.split(" from ")[0] || "Islander";
+  const location = profile?.background.match(/from ([^.]+)/)?.[1]?.split(".")[0] || "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -65,77 +64,163 @@ export function CharacterModal({ character, allCharacters, onClose }: CharacterM
       />
       
       {/* Modal */}
-      <div className="relative bg-zinc-950 border border-zinc-800 rounded-xl max-w-2xl w-full max-h-[85vh] overflow-hidden">
+      <div className="relative bg-[#0a0a0a] border border-[#4B5358]/50 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-start gap-4 p-6 border-b border-zinc-800">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={character.avatarUrl}
-            alt={character.name}
-            className="w-20 h-20 rounded-full bg-zinc-800"
-          />
-          <div className="flex-1">
-            <h2 className="text-2xl font-light text-zinc-100">{character.name}</h2>
-            <p className="text-sm text-zinc-500 mt-1">
-              {personalityDescriptions[character.id]}
-            </p>
-            {partner && (
-              <p className="text-sm text-zinc-400 mt-2">
-                Currently with <span className="text-rose-400">{partner.name}</span>
-              </p>
-            )}
-          </div>
+        <div className="relative p-6 border-b border-[#4B5358]/30">
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="absolute top-4 right-4 text-[#727072] hover:text-[#D2D6EF] transition-colors z-10"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+
+          <div className="flex items-start gap-5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={character.avatarUrl}
+              alt={character.name}
+              className="w-24 h-24 rounded-2xl bg-[#4B5358]/30 shrink-0"
+            />
+            <div className="flex-1 min-w-0 pr-8">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-semibold text-[#D2D6EF]">{character.name}</h2>
+                <span className="text-[#727072] text-lg font-light">{age}</span>
+              </div>
+              <p className="text-sm text-[#AF929D] mt-0.5 font-medium">{occupation}</p>
+              {location && (
+                <p className="text-xs text-[#727072] mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  </svg>
+                  {location}
+                </p>
+              )}
+              {/* Tagline */}
+              {profile?.tagline && (
+                <p className="text-sm text-[#D2D6EF]/80 mt-3 italic">
+                  &ldquo;{profile.tagline}&rdquo;
+                </p>
+              )}
+              {partner && (
+                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#AF929D]/10 border border-[#AF929D]/20">
+                  <svg className="w-3 h-3 text-[#AF929D]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs text-[#AF929D]">Coupled with {partner.name}</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(85vh-120px)]">
+        <div className="overflow-y-auto max-h-[calc(85vh-180px)]">
+          {/* The Tea - Main description */}
+          {profile?.description && (
+            <div className="p-6 border-b border-[#4B5358]/30">
+              <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3 flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#AF929D]"></span>
+                The Tea
+              </h3>
+              <p className="text-sm text-[#D2D6EF]/90 leading-relaxed">
+                {profile.description}
+              </p>
+            </div>
+          )}
+
+          {/* Red Flags & Green Flags */}
+          {profile && (
+            <div className="p-6 border-b border-[#4B5358]/30">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Red Flags */}
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3 flex items-center gap-2">
+                    <span className="text-base">🚩</span>
+                    Red Flags
+                  </h3>
+                  <ul className="space-y-2">
+                    {profile.redFlags?.map((flag, idx) => (
+                      <li key={idx} className="text-xs text-[#AF929D] flex items-start gap-2">
+                        <span className="text-[#AF929D]/50 mt-0.5">•</span>
+                        {flag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {/* Green Flags */}
+                <div>
+                  <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3 flex items-center gap-2">
+                    <span className="text-base">💚</span>
+                    Green Flags
+                  </h3>
+                  <ul className="space-y-2">
+                    {profile.greenFlags?.map((flag, idx) => (
+                      <li key={idx} className="text-xs text-[#104547] flex items-start gap-2">
+                        <span className="text-[#104547]/50 mt-0.5">•</span>
+                        {flag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* How They Flirt */}
+          {profile?.flirtStyle && (
+            <div className="p-6 border-b border-[#4B5358]/30">
+              <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3 flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-[#AF929D]"></span>
+                How They Flirt
+              </h3>
+              <p className="text-sm text-[#D2D6EF]/80">
+                {profile.flirtStyle}
+              </p>
+            </div>
+          )}
+
           {/* Personality Stats */}
-          <div className="p-6 border-b border-zinc-800/50">
-            <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Personality</h3>
+          <div className="p-6 border-b border-[#4B5358]/30">
+            <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3">Personality DNA</h3>
             <div className="grid grid-cols-2 gap-3">
-              <StatBar label="Attachment" value={character.personality.attachment} />
-              <StatBar label="Novelty" value={character.personality.novelty} />
-              <StatBar label="Trust Bias" value={character.personality.trustBias} />
-              <StatBar label="Volatility" value={character.personality.volatility} />
+              <StatBar label="Attachment" value={character.personality.attachment} description="How quickly they bond" />
+              <StatBar label="Novelty" value={character.personality.novelty} description="Craving for new connections" />
+              <StatBar label="Trust Bias" value={character.personality.trustBias} description="How easily they trust" />
+              <StatBar label="Volatility" value={character.personality.volatility} description="Emotional unpredictability" />
             </div>
           </div>
 
           {/* Relationships */}
-          <div className="p-6 border-b border-zinc-800/50">
-            <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
-              Connections
+          <div className="p-6 border-b border-[#4B5358]/30">
+            <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3">
+              Current Dynamics
             </h3>
             <div className="space-y-3">
               {relationships.map(({ character: other, attraction, trust, jealousy }) => (
-                <div key={other.id} className="flex items-center gap-3">
+                <div key={other.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#104547]/10 transition-colors">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={other.avatarUrl}
                     alt={other.name}
-                    className="w-10 h-10 rounded-full bg-zinc-800"
+                    className="w-10 h-10 rounded-xl bg-[#4B5358]/30"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-zinc-300">{other.name}</span>
+                      <span className="text-sm text-[#D2D6EF]">{other.name}</span>
                       {character.currentPartner === other.id && (
-                        <span className="text-[10px] uppercase tracking-wider text-rose-400 bg-rose-400/10 px-2 py-0.5 rounded">
+                        <span className="text-[10px] uppercase tracking-wider text-[#AF929D] bg-[#AF929D]/10 px-2 py-0.5 rounded">
                           Partner
                         </span>
                       )}
                     </div>
                     <div className="flex gap-4 mt-1">
-                      <MiniStat label="attraction" value={attraction} color="text-rose-400" />
-                      <MiniStat label="trust" value={trust} color="text-emerald-400" />
+                      <MiniStat label="attraction" value={attraction} color="text-[#AF929D]" />
+                      <MiniStat label="trust" value={trust} color="text-[#D2D6EF]" />
                       {jealousy > 20 && (
-                        <MiniStat label="jealousy" value={jealousy} color="text-amber-400" />
+                        <MiniStat label="jealousy" value={jealousy} color="text-[#727072]" />
                       )}
                     </div>
                   </div>
@@ -146,13 +231,13 @@ export function CharacterModal({ character, allCharacters, onClose }: CharacterM
 
           {/* Recent Conversations */}
           <div className="p-6">
-            <h3 className="text-xs uppercase tracking-wider text-zinc-500 mb-3">
+            <h3 className="text-xs uppercase tracking-wider text-[#727072] mb-3">
               Private Conversations
             </h3>
             {loading ? (
-              <p className="text-sm text-zinc-600">Loading...</p>
+              <p className="text-sm text-[#4B5358]">Loading...</p>
             ) : conversations.length === 0 ? (
-              <p className="text-sm text-zinc-600">No conversations yet.</p>
+              <p className="text-sm text-[#4B5358]">No conversations yet.</p>
             ) : (
               <div className="space-y-4">
                 {conversations.slice(0, 5).map((convo) => (
@@ -171,26 +256,29 @@ export function CharacterModal({ character, allCharacters, onClose }: CharacterM
   );
 }
 
-function StatBar({ label, value }: { label: string; value: number }) {
+function StatBar({ label, value, description }: { label: string; value: number; description?: string }) {
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
-        <span className="text-zinc-500">{label}</span>
-        <span className="text-zinc-400">{value}</span>
+        <span className="text-[#727072]">{label}</span>
+        <span className="text-[#D2D6EF]/70">{value}</span>
       </div>
-      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[#4B5358]/30 rounded-full overflow-hidden">
         <div
-          className="h-full bg-zinc-600 transition-all"
+          className="h-full bg-gradient-to-r from-[#104547] to-[#AF929D] transition-all"
           style={{ width: `${value}%` }}
         />
       </div>
+      {description && (
+        <p className="text-[9px] text-[#4B5358] mt-1">{description}</p>
+      )}
     </div>
   );
 }
 
 function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <span className="text-[10px] text-zinc-500">
+    <span className="text-[10px] text-[#727072]">
       {label}: <span className={color}>{value}</span>
     </span>
   );
@@ -216,10 +304,10 @@ function ConversationCard({
   };
 
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg overflow-hidden">
+    <div className="bg-[#104547]/20 border border-[#4B5358]/30 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"
+        className="w-full p-3 flex items-center justify-between hover:bg-[#104547]/30 transition-colors"
       >
         <div className="flex items-center gap-2">
           {otherCharacter && (
@@ -230,17 +318,17 @@ function ConversationCard({
                 alt={otherCharacter.name}
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-sm text-zinc-300">with {otherCharacter.name}</span>
+              <span className="text-sm text-[#D2D6EF]">with {otherCharacter.name}</span>
             </>
           )}
-          <span className="text-[10px] text-zinc-600 bg-zinc-800 px-2 py-0.5 rounded">
+          <span className="text-[10px] text-[#727072] bg-[#4B5358]/30 px-2 py-0.5 rounded">
             {contextLabels[conversation.context] || conversation.context}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-zinc-600">{timeAgo}</span>
+          <span className="text-[10px] text-[#4B5358]">{timeAgo}</span>
           <svg 
-            className={`w-4 h-4 text-zinc-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-[#727072] transition-transform ${expanded ? 'rotate-180' : ''}`}
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"
@@ -251,7 +339,7 @@ function ConversationCard({
       </button>
       
       {expanded && (
-        <div className="p-3 pt-0 space-y-2 border-t border-zinc-800/50">
+        <div className="p-3 pt-0 space-y-2 border-t border-[#4B5358]/30">
           {conversation.messages.map((msg, idx) => {
             const speaker = INITIAL_CHARACTERS.find(c => c.name === msg.speaker);
             const isCurrentChar = speaker?.id === currentCharacterId;
@@ -262,13 +350,13 @@ function ConversationCard({
                 className={`flex gap-2 ${isCurrentChar ? 'flex-row-reverse' : ''}`}
               >
                 <div 
-                  className={`max-w-[80%] p-2 rounded-lg text-sm ${
+                  className={`max-w-[80%] p-2 rounded-xl text-sm ${
                     isCurrentChar 
-                      ? 'bg-rose-900/30 text-rose-100' 
-                      : 'bg-zinc-800 text-zinc-300'
+                      ? 'bg-[#AF929D]/20 text-[#D2D6EF]' 
+                      : 'bg-[#4B5358]/30 text-[#D2D6EF]'
                   }`}
                 >
-                  <p className="text-[10px] text-zinc-500 mb-1">{msg.speaker}</p>
+                  <p className="text-[10px] text-[#727072] mb-1">{msg.speaker}</p>
                   <p>{msg.content}</p>
                 </div>
               </div>
@@ -276,14 +364,14 @@ function ConversationCard({
           })}
           
           {/* Emotional outcome */}
-          <div className="pt-2 mt-2 border-t border-zinc-800/50 flex gap-4 text-[10px] text-zinc-500">
+          <div className="pt-2 mt-2 border-t border-[#4B5358]/30 flex gap-4 text-[10px] text-[#727072]">
             <span>
-              Attraction: <span className={conversation.emotionalOutcome.initiator.attractionDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+              Attraction: <span className={conversation.emotionalOutcome.initiator.attractionDelta >= 0 ? 'text-[#104547]' : 'text-[#AF929D]'}>
                 {conversation.emotionalOutcome.initiator.attractionDelta >= 0 ? '+' : ''}{conversation.emotionalOutcome.initiator.attractionDelta}
               </span>
             </span>
             <span>
-              Trust: <span className={conversation.emotionalOutcome.initiator.trustDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+              Trust: <span className={conversation.emotionalOutcome.initiator.trustDelta >= 0 ? 'text-[#104547]' : 'text-[#AF929D]'}>
                 {conversation.emotionalOutcome.initiator.trustDelta >= 0 ? '+' : ''}{conversation.emotionalOutcome.initiator.trustDelta}
               </span>
             </span>

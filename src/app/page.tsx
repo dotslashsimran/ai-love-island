@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showConfessionalBooth, setShowConfessionalBooth] = useState(false);
+  const [showMobileTimeline, setShowMobileTimeline] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [nextSimIn, setNextSimIn] = useState(SIMULATION_INTERVAL / 1000);
   const hasFetched = useRef(false);
@@ -134,10 +135,10 @@ export default function Dashboard() {
   }, [fetchData]);
 
   return (
-    <div className="min-h-screen bg-gradient-dark text-zinc-100 noise-overlay">
+    <div className="min-h-screen bg-gradient-dark text-[#D2D6EF] noise-overlay">
       <div className="flex h-screen">
         {/* Main content area */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           <div className="max-w-4xl mx-auto px-6 py-8">
             {/* Header */}
             <header className="mb-10 flex items-center justify-between">
@@ -148,27 +149,28 @@ export default function Dashboard() {
                   </h1>
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#AF929D] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#AF929D]"></span>
                     </span>
-                    <span className="text-[10px] uppercase tracking-widest text-rose-400/80">Live</span>
+                    <span className="text-[10px] uppercase tracking-widest text-[#AF929D]/80">Live</span>
                   </div>
                 </div>
-                <p className="text-[10px] uppercase tracking-widest text-zinc-600 mt-2">
+                <p className="text-[10px] uppercase tracking-widest text-[#727072] mt-2">
                   {isSimulating ? (
-                    <span className="text-rose-400 animate-pulse">Processing interactions...</span>
+                    <span className="text-[#AF929D] animate-pulse">Processing interactions...</span>
                   ) : (
-                    <span className="text-zinc-500">Next cycle in <span className="text-zinc-400 font-mono">{nextSimIn}s</span></span>
+                    <span className="text-[#727072]">Next cycle in <span className="text-[#D2D6EF]/70 font-mono">{nextSimIn}s</span></span>
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              {/* Desktop buttons - hidden on mobile (bottom bar handles this) */}
+              <div className="hidden lg:flex items-center gap-3">
                 <button
                   onClick={() => setShowConfessionalBooth(!showConfessionalBooth)}
                   className={`px-4 py-2 text-[10px] uppercase tracking-wider rounded-lg transition-all duration-300 ${
                     showConfessionalBooth 
-                      ? "bg-rose-500/10 border border-rose-500/30 text-rose-400" 
-                      : "bg-zinc-900/80 border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
+                      ? "bg-[#AF929D]/10 border border-[#AF929D]/30 text-[#AF929D]" 
+                      : "bg-[#104547]/30 border border-[#4B5358]/50 text-[#727072] hover:border-[#4B5358] hover:text-[#D2D6EF]"
                   }`}
                 >
                   Confessionals
@@ -176,7 +178,7 @@ export default function Dashboard() {
                 <button
                   onClick={triggerSimulation}
                   disabled={isSimulating}
-                  className="group px-4 py-2 text-[10px] uppercase tracking-wider bg-zinc-900/80 border border-zinc-800 rounded-lg hover:border-rose-500/30 hover:bg-rose-500/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group px-4 py-2 text-[10px] uppercase tracking-wider bg-[#104547]/30 border border-[#4B5358]/50 text-[#727072] rounded-lg hover:border-[#AF929D]/30 hover:bg-[#AF929D]/5 hover:text-[#D2D6EF] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="flex items-center gap-2">
                     {isSimulating ? (
@@ -214,7 +216,6 @@ export default function Dashboard() {
                   <CharacterCard
                     key={character.id}
                     character={character}
-                    allCharacters={characters}
                     onClick={() => setSelectedCharacterId(character.id)}
                   />
                 ))}
@@ -227,9 +228,9 @@ export default function Dashboard() {
             </section>
 
             {/* Footer timestamp */}
-            <footer className="mt-12 pt-4 border-t border-zinc-900/50">
-              <p className="text-[10px] text-zinc-700 uppercase tracking-wider flex items-center gap-2">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/50"></span>
+            <footer className="mt-12 pt-4 border-t border-[#4B5358]/20">
+              <p className="text-[10px] text-[#727072] uppercase tracking-wider flex items-center gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#104547]"></span>
                 Last sync: {lastUpdate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </p>
             </footer>
@@ -237,7 +238,7 @@ export default function Dashboard() {
         </main>
 
         {/* Timeline sidebar - sticky right */}
-        <aside className="w-80 border-l border-zinc-900/50 bg-zinc-950/50 backdrop-blur-sm shrink-0 hidden lg:block">
+        <aside className="w-80 border-l border-[#4B5358]/30 bg-[#104547]/10 backdrop-blur-sm shrink-0 hidden lg:block">
           <div className="sticky top-0 h-screen overflow-hidden">
             <TimelineSidebar 
               events={events} 
@@ -248,6 +249,151 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+
+      {/* Mobile bottom bar - visible only on smaller screens */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-[#0a0a0a]/95 backdrop-blur-md border-t border-[#4B5358]/30 z-40">
+        <div className="flex items-center justify-around py-3 px-4">
+          <button
+            onClick={() => { setShowMobileTimeline(false); setShowConfessionalBooth(!showConfessionalBooth); }}
+            className={`flex flex-col items-center gap-1 px-4 py-1 rounded-lg transition-all ${
+              showConfessionalBooth ? "text-[#AF929D]" : "text-[#727072]"
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="text-[9px] uppercase tracking-wider">Confessionals</span>
+          </button>
+          
+          <button
+            onClick={() => { setShowConfessionalBooth(false); setShowMobileTimeline(!showMobileTimeline); }}
+            className={`flex flex-col items-center gap-1 px-4 py-1 rounded-lg transition-all relative ${
+              showMobileTimeline ? "text-[#AF929D]" : "text-[#727072]"
+            }`}
+          >
+            {events.length > 0 && (
+              <span className="absolute -top-1 right-2 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#AF929D] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#AF929D]"></span>
+              </span>
+            )}
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="text-[9px] uppercase tracking-wider">Live Feed</span>
+          </button>
+
+          <button
+            onClick={triggerSimulation}
+            disabled={isSimulating}
+            className="flex flex-col items-center gap-1 px-4 py-1 rounded-lg transition-all text-[#727072] disabled:opacity-50"
+          >
+            {isSimulating ? (
+              <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            )}
+            <span className="text-[9px] uppercase tracking-wider">
+              {isSimulating ? "Running" : `${nextSimIn}s`}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Timeline slide-up panel */}
+      {showMobileTimeline && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowMobileTimeline(false)}
+          />
+          {/* Panel */}
+          <div className="absolute bottom-0 left-0 right-0 h-[70vh] bg-[#0a0a0a] border-t border-[#4B5358]/30 rounded-t-2xl overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#4B5358]/30">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#AF929D] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#AF929D]"></span>
+                </span>
+                <span className="text-xs uppercase tracking-widest text-[#727072]">Live Observations</span>
+                <span className="text-[10px] text-[#4B5358]">
+                  {events.length + conversations.length} events
+                </span>
+              </div>
+              <button 
+                onClick={() => setShowMobileTimeline(false)}
+                className="p-2 text-[#727072] hover:text-[#D2D6EF] transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-[calc(70vh-52px)] overflow-y-auto">
+              <TimelineSidebar 
+                events={events} 
+                interactions={interactions}
+                conversations={conversations}
+                onConversationClick={(conv) => {
+                  setSelectedConversation(conv);
+                  setShowMobileTimeline(false);
+                }}
+                hideHeader={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Confessionals slide-up panel */}
+      {showConfessionalBooth && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowConfessionalBooth(false)}
+          />
+          {/* Panel */}
+          <div className="absolute bottom-0 left-0 right-0 h-[70vh] bg-[#0a0a0a] border-t border-[#4B5358]/30 rounded-t-2xl overflow-hidden animate-slide-up">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#4B5358]/30">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-[#AF929D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span className="text-xs uppercase tracking-widest text-[#727072]">Confessionals</span>
+                <span className="text-[10px] text-[#4B5358]">
+                  {confessionals.length} entries
+                </span>
+              </div>
+              <button 
+                onClick={() => setShowConfessionalBooth(false)}
+                className="p-2 text-[#727072] hover:text-[#D2D6EF] transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-[calc(70vh-52px)] overflow-y-auto p-4">
+              {confessionals.length > 0 ? (
+                <ConfessionalPanel confessionals={confessionals} />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-[#727072] text-sm">No confessionals yet</p>
+                  <p className="text-[#4B5358] text-xs mt-2">The islanders are keeping their thoughts to themselves.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Character Modal */}
       {selectedCharacter && (
@@ -290,8 +436,8 @@ function CouplingStatus({ characters }: { characters: Character[] }) {
   if (couples.length === 0 && singles.length === characters.length) {
     return (
       <div className="text-center py-6">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/30 border border-zinc-800/50">
-          <span className="text-zinc-600 text-xs">All islanders currently single</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#104547]/20 border border-[#4B5358]/30">
+          <span className="text-[#727072] text-xs">All islanders currently single</span>
         </div>
       </div>
     );
@@ -299,23 +445,23 @@ function CouplingStatus({ characters }: { characters: Character[] }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-[10px] uppercase tracking-widest text-zinc-600">Current Couples</h3>
+      <h3 className="text-[10px] uppercase tracking-widest text-[#727072]">Current Couples</h3>
       {couples.length > 0 && (
         <div className="flex flex-wrap gap-3">
           {couples.map(({ char1, char2 }) => (
             <div
               key={`${char1.id}-${char2.id}`}
-              className="group flex items-center gap-2 bg-zinc-900/30 border border-zinc-800/50 rounded-full px-4 py-2 hover:border-rose-500/20 hover:bg-rose-500/5 transition-all duration-300"
+              className="group flex items-center gap-2 bg-[#104547]/20 border border-[#4B5358]/30 rounded-full px-4 py-2 hover:border-[#AF929D]/30 hover:bg-[#AF929D]/5 transition-all duration-300"
             >
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={char1.avatarUrl}
                   alt={char1.name}
-                  className="w-7 h-7 rounded-full ring-2 ring-zinc-900"
+                  className="w-7 h-7 rounded-full ring-2 ring-[#0a0a0a]"
                 />
               </div>
-              <span className="text-rose-500/60 text-xs group-hover:text-rose-400 transition-colors">
+              <span className="text-[#AF929D]/60 text-xs group-hover:text-[#AF929D] transition-colors">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                 </svg>
@@ -325,10 +471,10 @@ function CouplingStatus({ characters }: { characters: Character[] }) {
                 <img
                   src={char2.avatarUrl}
                   alt={char2.name}
-                  className="w-7 h-7 rounded-full ring-2 ring-zinc-900"
+                  className="w-7 h-7 rounded-full ring-2 ring-[#0a0a0a]"
                 />
               </div>
-              <span className="text-xs text-zinc-500 ml-1 group-hover:text-zinc-400 transition-colors">
+              <span className="text-xs text-[#727072] ml-1 group-hover:text-[#D2D6EF] transition-colors">
                 {char1.name} & {char2.name}
               </span>
             </div>
